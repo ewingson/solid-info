@@ -1,0 +1,40 @@
+<!-- extended Solid info -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solid Info App</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+    <main>
+        <h1>Solid show some triples' objects</h1>
+
+        <!-- Shown while the session is being checked -->
+        <div id="loading">
+            <p>Initializing session...</p>
+        </div>
+
+        <!-- Shown only to logged-out users -->
+        <div id="auth-guest" hidden>
+            <p>You are not logged in. Please log in to continue.</p>
+            <button id="login-button">Login with your Idp</button>
+        </div>
+
+        <!-- Shown only to logged-in users -->
+        <div id="auth-user" hidden>
+            <p>Hello, <strong id="username"></strong>!</p>
+            <button id="logout-button">Log out</button>
+        </div>
+    </main>
+
+    <!--
+      The necessary libraries, using the current versions from august 2025.
+      The order is critical: Libraries first, then our application logic.
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/@inrupt/solid-client-authn-browser@3.1.0/dist/solid-client-authn.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/n3@1.26.0/browser/n3.min.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
