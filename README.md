@@ -1,2 +1,12 @@
 # solid-info
-show some info from pod
+
+- prompt idp
+- show `foaf:name`
+- show webid
+- show `vcard:fn`
+
+optional:
+- show `publicTypeIndex`
+- show `privateTypeIndex`
+- show `<http://www.w3.org/ns/pim/space#Storage>`
+
