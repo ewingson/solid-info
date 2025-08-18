@@ -1,7 +1,7 @@
 // base code Noel and Gemini -->
 // --- SECTION 1: CONFIGURATION ---
 // oidc issuer will be prompted
-// const SOLID_OIDC_ISSUER = "https://teamid.live";
+let SOLID_OIDC_ISSUER = "";
 const FOAF_NAME_PREDICATE = "http://xmlns.com/foaf/0.1/name";
 
 // --- SECTION 2: UI ELEMENT REFERENCES ---
@@ -40,6 +40,25 @@ async function main() {
         alert(error.message);
         updateUI(false); // If an error occurs, show the guest view.
     }
+}
+
+function getLoginUrl() {
+    // Asking for a login url in Solid is kind of tricky. In a real application, you should be
+    // asking for a user's webId, and reading the user's profile you would be able to obtain
+    // the url of their identity provider. However, most users may not know what their webId is,
+    // and they introduce the url of their issue provider directly. In order to simplify this
+    // example, we just use the base domain of the url they introduced, and this should work
+    // most of the time.
+    const url = prompt('Introduce your Solid login url (this is your pod-provider or idp)');
+
+    if (!url)
+        return null;
+
+    const loginUrl = new URL(url);
+    loginUrl.hash = '';
+    loginUrl.pathname = '';
+
+    return loginUrl.href;
 }
 
 /**
@@ -98,6 +117,7 @@ function updateUI(isLoggedIn, name) {
 
 // Attach event listeners to buttons.
 loginButton.onclick = () => {
+	SOLID_OIDC_ISSUER = getLoginUrl();
     solidClientAuthentication.login({
         oidcIssuer: SOLID_OIDC_ISSUER, //user will provide this value per prompt
         redirectUrl: window.location.href,
