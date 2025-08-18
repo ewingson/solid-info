@@ -1,3 +1,4 @@
+// base code Noel and Gemini -->
 // --- SECTION 1: CONFIGURATION ---
 // oidc issuer will be prompted
 // const SOLID_OIDC_ISSUER = "https://teamid.live";
