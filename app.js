@@ -11,6 +11,7 @@ const userDiv = document.getElementById('auth-user');
 const loginButton = document.getElementById('login-button');
 const logoutButton = document.getElementById('logout-button');
 const usernameSpan = document.getElementById('username');
+const webidSpan = document.getElementById('webid');
 
 // --- SECTION 3: CORE SOLID LOGIC ---
 
@@ -34,7 +35,8 @@ async function main() {
 
         // If logged in, fetch the user's name and update the UI.
         const user = await fetchUserProfile(session.info.webId);
-        updateUI(true, user.name);
+        const webid = session.info.webId;
+        updateUI(true, user.name, webid);
 
     } catch (error) {
         alert(error.message);
@@ -102,13 +104,14 @@ async function readSolidDocument(url) {
  * @param {boolean} isLoggedIn - Whether the user is logged in.
  * @param {string} [name] - The user's name, if logged in.
  */
-function updateUI(isLoggedIn, name) {
+function updateUI(isLoggedIn, name, webidname) {
     loadingDiv.setAttribute('hidden', ''); // Hide loading message
 
     if (isLoggedIn) {
         guestDiv.setAttribute('hidden', '');
         userDiv.removeAttribute('hidden');
         usernameSpan.textContent = name;
+        webidSpan.textContent = webidname;
     } else {
         userDiv.setAttribute('hidden', '');
         guestDiv.removeAttribute('hidden');
