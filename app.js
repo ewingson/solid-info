@@ -3,6 +3,7 @@
 // oidc issuer will be prompted
 let SOLID_OIDC_ISSUER = "";
 const FOAF_NAME_PREDICATE = "http://xmlns.com/foaf/0.1/name";
+const VC_FN_PREDICATE = "http://www.w3.org/2006/vcard/ns#fn";
 
 // --- SECTION 2: UI ELEMENT REFERENCES ---
 const loadingDiv = document.getElementById('loading');
@@ -12,6 +13,7 @@ const loginButton = document.getElementById('login-button');
 const logoutButton = document.getElementById('logout-button');
 const usernameSpan = document.getElementById('username');
 const webidSpan = document.getElementById('webid');
+const fnSpan = document.getElementById('fn');
 
 // --- SECTION 3: CORE SOLID LOGIC ---
 
@@ -36,7 +38,9 @@ async function main() {
         // If logged in, fetch the user's name and update the UI.
         const user = await fetchUserProfile(session.info.webId);
         const webid = session.info.webId;
-        updateUI(true, user.name, webid);
+        const fname = await secondFetch(session.info.webId);
+        console.log(fname);
+        updateUI(true, user.name, webid, fname);
 
     } catch (error) {
         alert(error.message);
@@ -80,6 +84,16 @@ async function fetchUserProfile(webId) {
     };
 }
 
+async function secondFetch(webId) {
+    // This function uses the `readSolidDocument` helper below.
+    const profileQuads = await readSolidDocument(webId);
+
+	const fnQuad = profileQuads.find(quad => quad.predicate.value === VC_FN_PREDICATE);
+
+    // It returns the found name value, or a default string if not found.
+    return fnQuad?.object.value || 'not set';
+}
+
 /**
  * A low-level helper to fetch and parse a Solid document.
  * @param {string} url - The URL of the document to read.
@@ -104,7 +118,7 @@ async function readSolidDocument(url) {
  * @param {boolean} isLoggedIn - Whether the user is logged in.
  * @param {string} [name] - The user's name, if logged in.
  */
-function updateUI(isLoggedIn, name, webidname) {
+function updateUI(isLoggedIn, name, webidname, fName) {
     loadingDiv.setAttribute('hidden', ''); // Hide loading message
 
     if (isLoggedIn) {
@@ -112,6 +126,7 @@ function updateUI(isLoggedIn, name, webidname) {
         userDiv.removeAttribute('hidden');
         usernameSpan.textContent = name;
         webidSpan.textContent = webidname;
+        fnSpan.textContent = fName;
     } else {
         userDiv.setAttribute('hidden', '');
         guestDiv.removeAttribute('hidden');
