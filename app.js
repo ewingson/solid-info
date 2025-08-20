@@ -6,6 +6,7 @@ const FOAF_NAME_PREDICATE = "http://xmlns.com/foaf/0.1/name";
 const VC_FN_PREDICATE = "http://www.w3.org/2006/vcard/ns#fn";
 const PUB_TI_PREDICATE = "http://www.w3.org/ns/solid/terms#publicTypeIndex";
 const PRIV_TI_PREDICATE = "http://www.w3.org/ns/solid/terms#privateTypeIndex";
+const PIMSTORAGE_PREDICATE = "http://www.w3.org/ns/pim/space#storage";
 
 // --- SECTION 2: UI ELEMENT REFERENCES ---
 const loadingDiv = document.getElementById('loading');
@@ -18,6 +19,7 @@ const webidSpan = document.getElementById('webid');
 const fnSpan = document.getElementById('fn');
 const pubindexSpan = document.getElementById('pubind');
 const privindexSpan = document.getElementById('privind');
+const storageSpan = document.getElementById('root');
 
 // --- SECTION 3: CORE SOLID LOGIC ---
 
@@ -46,7 +48,8 @@ async function main() {
         console.log(fname);
         const pubti = await pubIFetch(session.info.webId);
         const privti = await privIFetch(session.info.webId);
-        updateUI(true, user.name, webid, fname, pubti, privti);
+        const pims = await rootstorageFetch(session.info.webId);
+        updateUI(true, user.name, webid, fname, pubti, privti, pims);
 
     } catch (error) {
         alert(error.message);
@@ -120,6 +123,14 @@ async function privIFetch(webId) {
     return priviQuad?.object.value || 'not found';
 }
 
+async function rootstorageFetch(webId) {
+    const profileQuads = await readSolidDocument(webId);
+    
+    const storageQuad = profileQuads.find(quad => quad.predicate.value === PIMSTORAGE_PREDICATE);
+
+    return storageQuad?.object.value || await findUserStorage(webId);
+}
+
 /**
  * A low-level helper to fetch and parse a Solid document.
  * @param {string} url - The URL of the document to read.
@@ -144,7 +155,7 @@ async function readSolidDocument(url) {
  * @param {boolean} isLoggedIn - Whether the user is logged in.
  * @param {string} [name] - The user's name, if logged in.
  */
-function updateUI(isLoggedIn, name, webidname, fName, pubTI, privTI) {
+function updateUI(isLoggedIn, name, webidname, fName, pubTI, privTI, pimS) {
     loadingDiv.setAttribute('hidden', ''); // Hide loading message
 
     if (isLoggedIn) {
@@ -155,6 +166,7 @@ function updateUI(isLoggedIn, name, webidname, fName, pubTI, privTI) {
         fnSpan.textContent = fName;
         pubindexSpan.textContent = pubTI;
         privindexSpan.textContent = privTI;
+        storageSpan.textContent = pimS;
     } else {
         userDiv.setAttribute('hidden', '');
         guestDiv.removeAttribute('hidden');
@@ -178,6 +190,21 @@ logoutButton.onclick = async () => {
     updateUI(false); // Reset to guest view.
 };
 
+async function findUserStorage(url) {
+    url = url.replace(/#.*$/, '');
+    url = url.endsWith('/') ? url + '../' : url + '/../';
+    url = new URL(url);
+
+    const response = await solidClientAuthentication.fetch(url.href);
+
+    if (response.headers.get('Link')?.includes('<http://www.w3.org/ns/pim/space#Storage>; rel="type"'))
+        return url.href;
+
+    if (url.pathname === '/')
+        return url.href;
+
+    return findUserStorage(url.href)
+}
 
 // --- SECTION 5: START THE APPLICATION ---
 main();
