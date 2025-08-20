@@ -4,6 +4,8 @@
 let SOLID_OIDC_ISSUER = "";
 const FOAF_NAME_PREDICATE = "http://xmlns.com/foaf/0.1/name";
 const VC_FN_PREDICATE = "http://www.w3.org/2006/vcard/ns#fn";
+const PUB_TI_PREDICATE = "http://www.w3.org/ns/solid/terms#publicTypeIndex";
+const PRIV_TI_PREDICATE = "http://www.w3.org/ns/solid/terms#privateTypeIndex";
 
 // --- SECTION 2: UI ELEMENT REFERENCES ---
 const loadingDiv = document.getElementById('loading');
@@ -14,6 +16,8 @@ const logoutButton = document.getElementById('logout-button');
 const usernameSpan = document.getElementById('username');
 const webidSpan = document.getElementById('webid');
 const fnSpan = document.getElementById('fn');
+const pubindexSpan = document.getElementById('pubind');
+const privindexSpan = document.getElementById('privind');
 
 // --- SECTION 3: CORE SOLID LOGIC ---
 
@@ -40,7 +44,9 @@ async function main() {
         const webid = session.info.webId;
         const fname = await secondFetch(session.info.webId);
         console.log(fname);
-        updateUI(true, user.name, webid, fname);
+        const pubti = await pubIFetch(session.info.webId);
+        const privti = await privIFetch(session.info.webId);
+        updateUI(true, user.name, webid, fname, pubti, privti);
 
     } catch (error) {
         alert(error.message);
@@ -94,6 +100,26 @@ async function secondFetch(webId) {
     return fnQuad?.object.value || 'not set';
 }
 
+async function pubIFetch(webId) {
+    // This function uses the `readSolidDocument` helper below.
+    const profileQuads = await readSolidDocument(webId);
+
+	const pubiQuad = profileQuads.find(quad => quad.predicate.value === PUB_TI_PREDICATE);
+
+    // It returns the found name value, or a default string if not found.
+    return pubiQuad?.object.value || 'not found';
+}
+
+async function privIFetch(webId) {
+    // This function uses the `readSolidDocument` helper below.
+    const profileQuads = await readSolidDocument(webId);
+
+	const priviQuad = profileQuads.find(quad => quad.predicate.value === PRIV_TI_PREDICATE);
+
+    // It returns the found name value, or a default string if not found.
+    return priviQuad?.object.value || 'not found';
+}
+
 /**
  * A low-level helper to fetch and parse a Solid document.
  * @param {string} url - The URL of the document to read.
@@ -118,7 +144,7 @@ async function readSolidDocument(url) {
  * @param {boolean} isLoggedIn - Whether the user is logged in.
  * @param {string} [name] - The user's name, if logged in.
  */
-function updateUI(isLoggedIn, name, webidname, fName) {
+function updateUI(isLoggedIn, name, webidname, fName, pubTI, privTI) {
     loadingDiv.setAttribute('hidden', ''); // Hide loading message
 
     if (isLoggedIn) {
@@ -127,6 +153,8 @@ function updateUI(isLoggedIn, name, webidname, fName) {
         usernameSpan.textContent = name;
         webidSpan.textContent = webidname;
         fnSpan.textContent = fName;
+        pubindexSpan.textContent = pubTI;
+        privindexSpan.textContent = privTI;
     } else {
         userDiv.setAttribute('hidden', '');
         guestDiv.removeAttribute('hidden');
