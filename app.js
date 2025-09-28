@@ -43,10 +43,11 @@ async function main() {
             return;
         }
 
-        // If logged in, fetch the user's name and update the UI.
+        // If logged in, fetch the user's info and update the UI.
         const user = await fetchUserProfile(session.info.webId);
         const webid = session.info.webId;
         const fname = await secondFetch(session.info.webId);
+        // show fn in console
         console.log(fname);
         const preferences = await preferencesFetch(session.info.webId);
         const pubti = await pubIFetch(session.info.webId);
@@ -102,7 +103,7 @@ async function secondFetch(webId) {
 
 	const fnQuad = profileQuads.find(quad => quad.predicate.value === VC_FN_PREDICATE);
 
-    // It returns the found name value, or a default string if not found.
+    // It returns the found vcard:fn value, or a default string if not found.
     return fnQuad?.object.value || 'hmm, not set';
 }
 
@@ -112,7 +113,7 @@ async function preferencesFetch(webId) {
 
 	const prefQuad = profileQuads.find(quad => quad.predicate.value === PREF_PREDICATE);
 
-    // It returns the found name value, or a default string if not found.
+    // It returns the found preferences value, or a default string if not found.
     return prefQuad?.object.value || 'hmm, not found';
 }
 
@@ -122,7 +123,7 @@ async function pubIFetch(webId) {
 
 	const pubiQuad = profileQuads.find(quad => quad.predicate.value === PUB_TI_PREDICATE);
 
-    // It returns the found name value, or a default string if not found.
+    // It returns the found publicTypeIndex value, or a default string if not found.
     return pubiQuad?.object.value || 'hmm, not found';
 }
 
@@ -132,10 +133,11 @@ async function privIFetch(webId) {
 
 	const priviQuad = profileQuads.find(quad => quad.predicate.value === PRIV_TI_PREDICATE);
 
-    // It returns the found name value, or a default string if not found.
+    // It returns the found privateTypeIndex value, or a default string if not found.
     return priviQuad?.object.value || 'hmm, not found';
 }
 
+// find root storage location / equivalent to the fetches above
 async function rootstorageFetch(webId) {
     const profileQuads = await readSolidDocument(webId);
     
@@ -172,8 +174,10 @@ function updateUI(isLoggedIn, name, webidname, fName, preF, pubTI, privTI, pimS)
     loadingDiv.setAttribute('hidden', ''); // Hide loading message
 
     if (isLoggedIn) {
+    	// hide
         guestDiv.setAttribute('hidden', '');
         userDiv.removeAttribute('hidden');
+        // output
         usernameSpan.textContent = name;
         webidSpan.textContent = webidname;
         fnSpan.textContent = fName;
@@ -191,7 +195,7 @@ function updateUI(isLoggedIn, name, webidname, fName, preF, pubTI, privTI, pimS)
 loginButton.onclick = () => {
 	SOLID_OIDC_ISSUER = getLoginUrl();
     solidClientAuthentication.login({
-        oidcIssuer: SOLID_OIDC_ISSUER, //user will provide this value per prompt
+        oidcIssuer: SOLID_OIDC_ISSUER, // user will provide this value per prompt
         redirectUrl: window.location.href,
         clientName: 'Solid Info App'
     });
@@ -204,6 +208,7 @@ logoutButton.onclick = async () => {
     updateUI(false); // Reset to guest view.
 };
 
+// fallback function
 async function findUserStorage(url) {
     url = url.replace(/#.*$/, '');
     url = url.endsWith('/') ? url + '../' : url + '/../';
