@@ -53,6 +53,7 @@ async function main() {
         const pubti = await pubIFetch(session.info.webId);
         const privti = await privIFetch(session.info.webId);
         const pims = await rootstorageFetch(session.info.webId);
+	// function to update UI
         updateUI(true, user.name, webid, fname, preferences, pubti, privti, pims);
 
     } catch (error) {
